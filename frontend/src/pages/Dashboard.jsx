@@ -95,7 +95,7 @@ function Dashboard() {
   const loadTransactions = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/transactions",
+        "https://smartspend-backend-xhjr.onrender.com/apitransactions",
         axiosConfig
       );
 
@@ -108,7 +108,7 @@ function Dashboard() {
   const loadBudgets = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/budgets",
+        "https://smartspend-backend-xhjr.onrender.com/apibudgets",
         axiosConfig
       );
 
@@ -121,7 +121,7 @@ function Dashboard() {
   const loadSavingsGoal = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/savings-goal",
+        "https://smartspend-backend-xhjr.onrender.com/apisavings-goal",
         axiosConfig
       );
 
