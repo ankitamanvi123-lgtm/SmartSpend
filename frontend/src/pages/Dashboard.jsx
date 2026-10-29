@@ -95,9 +95,9 @@ function Dashboard() {
   const loadTransactions = async () => {
     try {
       const response = await axios.get(
-        "https://smartspend-backend-xhjr.onrender.com/apitransactions",
-        axiosConfig
-      );
+  `${API_URL}/transactions`,
+  axiosConfig
+);
 
       setTransactions(response.data);
     } catch (error) {
@@ -108,7 +108,7 @@ function Dashboard() {
   const loadBudgets = async () => {
     try {
       const response = await axios.get(
-        "https://smartspend-backend-xhjr.onrender.com/apibudgets",
+        `${API_URL}/budgets`,
         axiosConfig
       );
 
@@ -121,7 +121,7 @@ function Dashboard() {
   const loadSavingsGoal = async () => {
     try {
       const response = await axios.get(
-        "https://smartspend-backend-xhjr.onrender.com/apisavings-goal",
+        `${API_URL}/savings-goal`,
         axiosConfig
       );
 
