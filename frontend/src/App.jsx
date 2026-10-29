@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import axios from "axios";
 import {
@@ -5,12 +6,15 @@ import {
   Routes,
   Route,
   Navigate,
-  useNavigate
+  useNavigate,
 } from "react-router-dom";
 
 import Dashboard from "./pages/Dashboard";
 import MoneySchool from "./pages/MoneySchool";
 import "./App.css";
+
+// Your deployed Render backend
+const API_URL = "https://smartspend-backend-xhjr.onrender.com/api";
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -26,26 +30,30 @@ function LoginRegister() {
   const navigate = useNavigate();
 
   const [register, setRegister] = useState(false);
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const submitForm = async (event) => {
     event.preventDefault();
 
+    if (loading) return;
+
+    setLoading(true);
+
     try {
       if (register) {
         const response = await axios.post(
-          "http://localhost:5000/api/auth/register",
+          `${API_URL}/auth/register`,
           {
             name,
             email,
-            password
+            password,
           }
         );
 
-        alert(response.data.message);
+        alert(response.data.message || "Registration successful!");
 
         setRegister(false);
         setName("");
@@ -53,139 +61,118 @@ function LoginRegister() {
         setPassword("");
       } else {
         const response = await axios.post(
-          "http://localhost:5000/api/auth/login",
+          `${API_URL}/auth/login`,
           {
             email,
-            password
+            password,
           }
         );
 
-        alert(response.data.message);
+        if (!response.data.token) {
+          throw new Error("Login succeeded but no token was returned.");
+        }
 
-        localStorage.setItem(
-          "token",
-          response.data.token
-        );
+        localStorage.setItem("token", response.data.token);
 
-        localStorage.setItem(
-          "user",
-          JSON.stringify(response.data.user)
-        );
+        if (response.data.user) {
+          localStorage.setItem(
+            "user",
+            JSON.stringify(response.data.user)
+          );
+        }
+
+        alert(response.data.message || "Login successful!");
 
         navigate("/dashboard");
       }
     } catch (error) {
-      alert(
+      console.error("Authentication error:", error);
+
+      const message =
         error.response?.data?.message ||
-        "Something went wrong"
-      );
+        error.message ||
+        "Something went wrong. Please try again.";
+
+      alert(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="app">
-
       <div className="auth-card">
+        <div className="logo">💰</div>
 
-        <div className="logo">
-          💰
-        </div>
-
-        <h1>
-          Personal Budget
-        </h1>
+        <h1>Personal Budget</h1>
 
         <p className="subtitle">
           Manage your money. Track your goals.
         </p>
 
         <div className="form-header">
-
-          <h2>
-            {register
-              ? "Create Account"
-              : "Welcome Back"}
-          </h2>
+          <h2>{register ? "Create Account" : "Welcome Back"}</h2>
 
           <p>
             {register
               ? "Start managing your finances today"
               : "Login to continue to your account"}
           </p>
-
         </div>
 
         <form onSubmit={submitForm}>
-
           {register && (
             <div className="input-group">
-
-              <label>
-                Name
-              </label>
+              <label>Name</label>
 
               <input
                 type="text"
                 placeholder="Enter your name"
                 value={name}
-                onChange={(event) =>
-                  setName(event.target.value)
-                }
+                onChange={(event) => setName(event.target.value)}
                 required
               />
-
             </div>
           )}
 
           <div className="input-group">
-
-            <label>
-              Email
-            </label>
+            <label>Email</label>
 
             <input
               type="email"
               placeholder="Enter your email"
               value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
-
           </div>
 
           <div className="input-group">
-
-            <label>
-              Password
-            </label>
+            <label>Password</label>
 
             <input
               type="password"
               placeholder="Enter your password"
               value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
+              onChange={(event) => setPassword(event.target.value)}
               required
             />
-
           </div>
 
           <button
             className="main-button"
             type="submit"
+            disabled={loading}
           >
-            {register
+            {loading
+              ? "Please wait..."
+              : register
               ? "Create Account"
               : "Login"}
           </button>
-
         </form>
 
         <div className="switch-section">
-
           <span>
             {register
               ? "Already have an account?"
@@ -202,15 +189,10 @@ function LoginRegister() {
               setPassword("");
             }}
           >
-            {register
-              ? "Login"
-              : "Register"}
+            {register ? "Login" : "Register"}
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }
@@ -218,13 +200,8 @@ function LoginRegister() {
 function App() {
   return (
     <BrowserRouter>
-
       <Routes>
-
-        <Route
-          path="/"
-          element={<LoginRegister />}
-        />
+        <Route path="/" element={<LoginRegister />} />
 
         <Route
           path="/dashboard"
@@ -234,27 +211,21 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-  path="/money-school"
-  element={
-    <ProtectedRoute>
-      <MoneySchool />
-    </ProtectedRoute>
-  }
-/>
 
         <Route
-          path="*"
+          path="/money-school"
           element={
-            <Navigate
-              to="/"
-              replace
-            />
+            <ProtectedRoute>
+              <MoneySchool />
+            </ProtectedRoute>
           }
         />
 
+        <Route
+          path="*"
+          element={<Navigate to="/" replace />}
+        />
       </Routes>
-
     </BrowserRouter>
   );
 }
