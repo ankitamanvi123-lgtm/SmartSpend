@@ -20,12 +20,12 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    console.error("Token verification failed:", error.message);
+  console.error("Token verification failed:", error.message);
 
-    return res.status(401).json({
-      message: "Invalid or expired token"
-    });
-  }
+  return res.status(401).json({
+    message: "Invalid or expired token"
+  });
+}
 };
 
 module.exports = authMiddleware;
